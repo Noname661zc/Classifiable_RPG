@@ -57,9 +57,13 @@ void GameController::onCommandSubmitted(const QString& command) {
     m_commandPanel->appendLog("> " + command);
     m_commandPanel->appendLog(result.message);
 
-    if (result.success && result.consumeStep) {
-        m_level->consumeStep();
+   if (result.success && result.consumeStep) {
+    m_level->consumeStep();
+
+    if (!m_level->isWin() && !m_level->isLose()) {
+        enemyTurn();
     }
+}
 
     if (m_level->isWin()) {
         m_commandPanel->appendLog("胜利！你在有限步数内击败了敌人。");
@@ -73,4 +77,21 @@ void GameController::refreshSelectedInfo() {
 
     Creature* creature = m_level->creature(m_selectedActorId);
     m_infoPanel->showCreature(creature);
+}
+void GameController::enemyTurn() {
+    if (!m_level) return;
+
+    Creature* enemy = m_level->creature("enemy");
+    Creature* player = m_level->creature("player");
+
+    if (!enemy || !player) return;
+    if (!enemy->isAlive()) return;
+    if (!player->isAlive()) return;
+
+    int damage = enemy->atk();
+    player->takeDamage(damage);
+
+    m_commandPanel->appendLog(
+        QString("enemy.attack(player); 造成 %1 点伤害。").arg(damage)
+    );
 }
